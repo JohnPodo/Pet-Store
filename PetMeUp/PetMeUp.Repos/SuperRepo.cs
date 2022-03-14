@@ -16,11 +16,7 @@ namespace PetMeUp.Repos
         {
             _db = new PetContext(conString, dbtype);
         }
-
-        public async Task<bool> SaveChanges()
-        {
-            return await _db.SaveChangesAsync() != 0;
-        }
+         
 
         public void Dispose()
         {

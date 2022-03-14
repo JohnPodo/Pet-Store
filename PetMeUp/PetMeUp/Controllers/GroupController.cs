@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetMeUp.Dtos;
 using PetMeUp.Handlers;
 using PetMeUp.Models.Models;
 using PetMeUp.Models.Responses;
@@ -50,11 +51,39 @@ namespace PetMeUp.Controllers
                 return StatusCode(500);
             }
         }
+        [HttpGet("{pageNo}/{pageSize}"), Authorize(Roles = "Admin, Employee")]
+        public async Task<ActionResult<DataResponse<PetGroup>>> GetGroupPage(int pageNo,int pageSize)
+        {
+            try
+            {
+                await WriteRequestInfoToLog(new { pageNo = pageNo , pageSize = pageSize });
+                var result = await _handler.GetGroups(pageNo,pageSize);
+                await WriteResponseInfoToLog(result);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                await _LogHandler.WriteToLog($"Exception on GetGroupPage with message --> {ex.Message}", Models.Severity.Exception);
+                return StatusCode(500);
+            }
+        }
 
         // POST api/<GroupController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult<BaseResponse>> AddGroup([FromBody] GroupDto dto)
         {
+            try
+            {
+                await WriteRequestInfoToLog(dto);
+                var result = await _handler.AddGroup(dto);
+                await WriteResponseInfoToLog(result);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                await _LogHandler.WriteToLog($"Exception on GetGroupPage with message --> {ex.Message}", Models.Severity.Exception);
+                return StatusCode(500);
+            }
         }
 
         // PUT api/<GroupController>/5

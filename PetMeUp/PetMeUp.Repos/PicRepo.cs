@@ -17,8 +17,11 @@ namespace PetMeUp.Repos
 
         public async Task<bool> AddPic(Pic model)
         {
+            if(model == null) return false;
+            if (await _db.Pics.AnyAsync(s => s.Name == model.Name))
+                return true;
             await _db.Pics.AddAsync(model); 
-            return true;
+            return await _db.SaveChangesAsync() != 0;
         }
 
         public async Task<bool> DeletePic(int id)
@@ -45,6 +48,7 @@ namespace PetMeUp.Repos
         }
 
         public async Task<Pic> GetPic(int id) => await _db.Pics.Where(_x => _x.Id == id).FirstOrDefaultAsync();
+        public async Task<Pic> GetPic(string title) => await _db.Pics.Where(_x => _x.Name == title).FirstOrDefaultAsync();
         public async Task<List<Pic>> GetPics() => await _db.Pics.ToListAsync();
     }
 }

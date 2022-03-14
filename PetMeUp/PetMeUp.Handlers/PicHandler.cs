@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PetMeUp.Handlers
 {
-    public class PicHandler :IDisposable
+    public class PicHandler : IDisposable
     {
         private readonly LogHandler _log;
         private readonly PicRepo _Repo;
@@ -27,6 +27,25 @@ namespace PetMeUp.Handlers
                     return null;
                 var pic = await _Repo.GetPic(id.Value);
                 pic = TransformPictureToBase64(pic);
+                return pic;
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteToLog($"Exception Caught in GetPic with message -> {ex.Message}", Severity.Exception);
+                return null;
+            }
+
+        }
+
+        public async Task<Pic> GetPic(string title, bool transformToBase64)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(title))
+                    return null;
+                var pic = await _Repo.GetPic(title);
+                if (transformToBase64)
+                    pic = TransformPictureToBase64(pic);
                 return pic;
             }
             catch (Exception ex)
@@ -64,7 +83,7 @@ namespace PetMeUp.Handlers
             {
                 await _log.WriteToLog($"Exception Caught in AddPic with message -> {ex.Message}", Severity.Exception);
                 return null;
-            } 
+            }
         }
 
         public async Task<Pic> UpdatePic(int id, Pic pic)
@@ -80,7 +99,7 @@ namespace PetMeUp.Handlers
                 await _log.WriteToLog($"Exception Caught in UpdatePic with message -> {ex.Message}", Severity.Exception);
                 return null;
             }
-           
+
         }
 
         public async Task<bool> DeletePic(int id)
@@ -94,10 +113,10 @@ namespace PetMeUp.Handlers
             {
                 await _log.WriteToLog($"Exception Caught in DeletePic with message -> {ex.Message}", Severity.Exception);
                 return false;
-            } 
+            }
         }
 
-        private Pic TransformPictureToBase64(Pic pic)
+        public Pic TransformPictureToBase64(Pic pic)
         {
             if (pic is null)
                 return null;
@@ -115,7 +134,7 @@ namespace PetMeUp.Handlers
             return pic;
         }
 
-        private Pic SaveImage(Pic pic)
+        public Pic SaveImage(Pic pic)
         {
             if (pic is null)
                 return null;

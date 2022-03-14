@@ -15,9 +15,9 @@ namespace PetMeUp.Repos
         {
         }
 
-        public async Task<List<PetGroup>> GetGroups(int noRows, int pageSize)
+        public async Task<List<PetGroup>> GetGroups(int pageNo, int pageSize)
         {
-            var data = await _db.Groups.Skip(pageSize * noRows).Take(pageSize).Include(s=>s.Pic).Include(s => s.Family).ToListAsync(); 
+            var data = await _db.Groups.Skip(pageSize * (pageNo-1)).Take(pageSize).Include(s=>s.Pic).Include(s => s.Family).ToListAsync(); 
             return data;
         }
         public async Task<List<PetGroup>> GetGroups()
@@ -35,6 +35,35 @@ namespace PetMeUp.Repos
         {
             var data = await _db.Groups.Where(f => f.Id == id).Include(s => s.Pic).Include(s => s.Family).FirstOrDefaultAsync(); 
             return data;
+        }
+
+        public async Task<int> GetGroupsCount()
+        {  
+            return await _db.Groups.CountAsync();
+        }
+
+        public async Task<bool> AddGroup(PetGroup newGroup)
+        {
+            if (newGroup == null)
+                return false;
+            if(await _db.Groups.AnyAsync(s=>s.Title == newGroup.Title)) 
+                return false;
+            var pic = newGroup.Pic;
+            var family = newGroup.Family;
+            newGroup.Pic = null;
+            newGroup.Family = null;
+            await _db.Groups.AddAsync(newGroup);
+            var result = await _db.SaveChangesAsync() != 0;
+            if (result)
+            {
+                var groupInBase = await _db.Groups.FirstOrDefaultAsync(s => s.Title == newGroup.Title);
+                if (groupInBase != null)
+                {
+                    groupInBase.Family = family;
+                    groupInBase.Pic = pic;
+                }
+            }
+            return await _db.SaveChangesAsync()!= 0 ;
         }
     }
 }

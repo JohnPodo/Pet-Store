@@ -14,7 +14,7 @@ namespace PetMeUp.Models.Models
 
         public string Description { get; set; }
 
-        public PetFamily Family { get; set; }
+        public PetFamily? Family { get; set; }
         public Pic? Pic { get; set; }
 
         public virtual ICollection<PetSpecie> Species { get; set; }
