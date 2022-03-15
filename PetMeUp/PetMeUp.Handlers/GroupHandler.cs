@@ -93,7 +93,7 @@ namespace PetMeUp.Handlers
                     {
                         var newPic = new Pic() { Name = dto.Pic.Name, Content = dto.Pic.Content };
                         var resultOfPick = await _icHandler.AddPic(newPic);
-                        if (resultOfPick != null)
+                        if (resultOfPick is not null)
                             newGroup.Pic = resultOfPick;
                     }
                 }
@@ -103,6 +103,66 @@ namespace PetMeUp.Handlers
             catch (Exception ex)
             {
                 await _log.WriteToLog($"Exception Caught in AddGroup with message -> {ex.Message}", Severity.Exception);
+                return new BaseResponse(false, "Error On Process");
+            }
+        }
+
+        public async Task<BaseResponse> DeleteGroup(int id)
+        {
+            try
+            {
+                var groupToDelete = await _Repo.GetGroup(id);
+                if (groupToDelete is null) return new BaseResponse(false, "Invalid Id");
+                var result = await _Repo.DeleteGroup(id);
+                return result ? new BaseResponse(true, String.Empty) : new BaseResponse(false, "Error On Process");
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteToLog($"Exception Caught in DeleteGroup with message -> {ex.Message}", Severity.Exception);
+                return new BaseResponse(false, "Error On Process");
+            }
+        }
+
+        public async Task<BaseResponse> UpdateGroup(int id, GroupDto newDto)
+        {
+            try
+            {
+                var groupToUpdate = await _Repo.GetGroup(id);
+                int idOfPick = 0;
+                if (groupToUpdate is null) return new BaseResponse(false, "Invalid Id");
+                bool result = true;
+                if (newDto.Pic is not null && groupToUpdate.Pic is not null)
+                {
+                    var resultOfDeletePic = await _icHandler.UpdatePic(groupToUpdate.Pic.Id, new Pic() { Name = newDto.Pic.Name, Content = newDto.Pic.Content });
+                    if (resultOfDeletePic is null) return new BaseResponse(false, "Error On Process");
+                }
+                if (newDto.Pic is not null && groupToUpdate.Pic is null)
+                {
+                    var resultOfAddPick = await _icHandler.AddPic(new Pic() { Name = newDto.Pic.Name, Content = newDto.Pic.Content });
+                    if (resultOfAddPick is null) return new BaseResponse(false, "Error On Process");
+                    groupToUpdate.Pic = resultOfAddPick;
+                }
+                if (newDto.Pic is null && groupToUpdate.Pic is not null)
+                {
+                    idOfPick = groupToUpdate.Pic.Id;
+                    groupToUpdate.Pic = null;
+                }
+                groupToUpdate.Description = newDto.Description;
+                groupToUpdate.Title = newDto.Title;
+                var updatedFamily = await _famHandler.GetFamily(newDto.FamilyId);
+                groupToUpdate.Family = updatedFamily.Data;
+                result = await _Repo.UpdateGroup(id, groupToUpdate);
+                if(!result) new BaseResponse(false, "Error On Process");
+                if (idOfPick != 0)
+                {
+                    result = await _icHandler.DeletePic(idOfPick);
+                    if (!result) return new BaseResponse(false, "Error On Process");
+                }
+                return new BaseResponse(true, String.Empty);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteToLog($"Exception Caught in UpdateGroup with message -> {ex.Message}", Severity.Exception);
                 return new BaseResponse(false, "Error On Process");
             }
         }

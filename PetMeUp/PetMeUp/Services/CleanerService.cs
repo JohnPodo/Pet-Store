@@ -2,22 +2,26 @@
 
 namespace PetMeUp.Services
 {
-    public class LogCleanerService : IHostedService, IDisposable
+    public class CleanerService : IHostedService, IDisposable
     {
         private int executionCount = 0;
-        private readonly ILogger<LogCleanerService> _logger;
+        private readonly ILogger<CleanerService> _logger;
         private readonly LogHandler handler;
+        private readonly PicHandler _Pichandler;
         private Timer _timer = null!;
 
-        public LogCleanerService(ILogger<LogCleanerService> logger,IConfiguration config)
+        public CleanerService(ILogger<CleanerService> logger,IConfiguration config)
         {
             _logger = logger; 
             handler = new LogHandler(config.GetConnectionString("ConString"), config.GetConnectionString("DbType"));
+            _Pichandler = new PicHandler(config.GetConnectionString("ConString"), config.GetConnectionString("DbType"),handler);
         }
 
         public void Dispose()
         {
             _timer?.Dispose();
+            handler.Dispose();
+            _Pichandler.Dispose();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -34,7 +38,17 @@ namespace PetMeUp.Services
             var result = handler.DeleteAllLogs().Result;
             if (!result) handler.WriteToLog("Something went wrong while cleaning logs", Models.Severity.Error);
             var count = Interlocked.Increment(ref executionCount);
-
+            var path = Path.Combine(Environment.CurrentDirectory, "Images");
+            if (Directory.Exists(path))
+            {
+                var files = Directory.GetFiles(path);
+                foreach (var file in files)
+                {
+                    FileInfo fi = new FileInfo(file); 
+                    var pic = _Pichandler.GetPic(fi.Name, false).Result;
+                    if (pic is null) File.Delete(file);
+                }
+            }
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 

@@ -29,8 +29,8 @@ namespace PetMeUp.Repos
             var picToDel = await _db.Pics.Where(x=>x.Id == id).FirstOrDefaultAsync();
             if(picToDel != null)
             {
-                _db.Pics.Remove(picToDel); 
-                return true;
+                _db.Pics.Remove(picToDel);
+                return await _db.SaveChangesAsync() != 0;
             }
             return false;
         }
@@ -41,8 +41,8 @@ namespace PetMeUp.Repos
             if (picToUpdate != null)
             {
                 picToUpdate.Name = model.Name;
-                picToUpdate.Content = model.Content; 
-                return true;
+                picToUpdate.Content = model.Content;
+                return await _db.SaveChangesAsync() != 0;
             }
             return false;
         }

@@ -17,7 +17,7 @@ namespace PetMeUp.Controllers
             _handler = new GroupHandler(_conString, _dbtype, _LogHandler);
         }
          
-        [HttpGet, Authorize(Roles = "Admin, Employee")]
+        [HttpGet]
         public async Task<ActionResult<DataResponse<List<PetGroup>>>> GetGroups()
         {
             try
@@ -35,7 +35,7 @@ namespace PetMeUp.Controllers
         }
 
         // GET api/<GroupController>/5
-        [HttpGet("{id}"), Authorize(Roles = "Admin, Employee")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<DataResponse<PetGroup>>> GetGroup(int id)
         {
             try
@@ -51,7 +51,7 @@ namespace PetMeUp.Controllers
                 return StatusCode(500);
             }
         }
-        [HttpGet("{pageNo}/{pageSize}"), Authorize(Roles = "Admin, Employee")]
+        [HttpGet("{pageNo}/{pageSize}")]
         public async Task<ActionResult<DataResponse<PetGroup>>> GetGroupPage(int pageNo,int pageSize)
         {
             try
@@ -67,7 +67,7 @@ namespace PetMeUp.Controllers
                 return StatusCode(500);
             }
         }
-
+        //, Authorize(Roles = "Admin, Employee")
         // POST api/<GroupController>
         [HttpPost]
         public async Task<ActionResult<BaseResponse>> AddGroup([FromBody] GroupDto dto)
@@ -81,21 +81,45 @@ namespace PetMeUp.Controllers
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on GetGroupPage with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on AddGroup with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         }
 
         // PUT api/<GroupController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult<BaseResponse>> UpdateGroup(int id, [FromBody] GroupDto dto)
         {
+            try
+            {
+                await WriteRequestInfoToLog(id);
+                var result = await _handler.UpdateGroup(id, dto);
+                await WriteResponseInfoToLog(result);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                await _LogHandler.WriteToLog($"Exception on UpdateGroup with message --> {ex.Message}", Models.Severity.Exception);
+                return StatusCode(500);
+            }
         }
 
         // DELETE api/<GroupController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<ActionResult<BaseResponse>> DeleteGroup(int id)
         {
+            try
+            {
+                await WriteRequestInfoToLog(id);
+                var result = await _handler.DeleteGroup(id);
+                await WriteResponseInfoToLog(result);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                await _LogHandler.WriteToLog($"Exception on DeleteGroup with message --> {ex.Message}", Models.Severity.Exception);
+                return StatusCode(500);
+            }
         }
 
         protected override void DisposeLocal()
