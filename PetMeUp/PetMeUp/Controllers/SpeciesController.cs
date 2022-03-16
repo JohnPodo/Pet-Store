@@ -9,39 +9,39 @@ using PetMeUp.Models.Responses;
 
 namespace PetMeUp.Controllers
 { 
-    public class GroupController : SuperController
+    public class SpeciesController : SuperController
     {
-        private readonly GroupHandler _handler;
-        public GroupController(IConfiguration config) : base(config)
+        private readonly SpeciesHandler _handler;
+        public SpeciesController(IConfiguration config) : base(config)
         {
-            _handler = new GroupHandler(_conString, _dbtype, _LogHandler);
+            _handler = new SpeciesHandler(_conString, _dbtype, _LogHandler);
         }
          
         [HttpGet]
-        public async Task<ActionResult<DataResponse<List<PetGroup>>>> GetGroups()
+        public async Task<ActionResult<DataResponse<List<PetSpecie>>>> GetSpecies()
         {
             try
             {
                 await WriteRequestInfoToLog<object?>(null);
-                var result = await _handler.GetGroups();
+                var result = await _handler.GetSpecies();
                 await WriteResponseInfoToLog(result);
                 return result.Success ?  Ok(result) : BadRequest(result) ;
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on GetGroups with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on GetSpecies with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         }
 
         // GET api/<GroupController>/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<DataResponse<PetGroup>>> GetGroup(int id)
+        public async Task<ActionResult<DataResponse<PetSpecie>>> GetSpecie(int id)
         {
             try
             {
                 await WriteRequestInfoToLog(id);
-                var result = await _handler.GetGroup(id);
+                var result = await _handler.GetSpecie(id);
                 await WriteResponseInfoToLog(result);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
@@ -52,71 +52,71 @@ namespace PetMeUp.Controllers
             }
         }
         [HttpGet("{pageNo}/{pageSize}")]
-        public async Task<ActionResult<DataCountResponse<PetGroup>>> GetGroupPage(int pageNo,int pageSize)
+        public async Task<ActionResult<DataCountResponse<PetSpecie>>> GetSpeciesPage(int pageNo,int pageSize)
         {
             try
             {
                 await WriteRequestInfoToLog(new { pageNo = pageNo , pageSize = pageSize });
-                var result = await _handler.GetGroups(pageNo,pageSize);
+                var result = await _handler.GetSpecies(pageNo,pageSize);
                 await WriteResponseInfoToLog(result);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on GetGroupPage with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on GetSpeciesPage with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         } 
         // POST api/<GroupController>
         [HttpPost, Authorize(Roles = "Admin, Employee")]
-        public async Task<ActionResult<BaseResponse>> AddGroup([FromBody] GroupDto dto)
+        public async Task<ActionResult<BaseResponse>> AddSpecie([FromBody] SpecieDto dto)
         {
             try
             {
                 await WriteRequestInfoToLog(dto);
-                var result = await _handler.AddGroup(dto);
+                var result = await _handler.AddSpecie(dto);
                 await WriteResponseInfoToLog(result);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on AddGroup with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on AddSpecie with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         }
 
         // PUT api/<GroupController>/5
         [HttpPut("{id}"), Authorize(Roles = "Admin, Employee")]
-        public async Task<ActionResult<BaseResponse>> UpdateGroup(int id, [FromBody] GroupDto dto)
+        public async Task<ActionResult<BaseResponse>> UpdateSpecie(int id, [FromBody] SpecieDto dto)
         {
             try
             {
                 await WriteRequestInfoToLog(id);
-                var result = await _handler.UpdateGroup(id, dto);
+                var result = await _handler.UpdateSpecie(id, dto);
                 await WriteResponseInfoToLog(result);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on UpdateGroup with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on UpdateSpecie with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         }
 
         // DELETE api/<GroupController>/5
         [HttpDelete("{id}"), Authorize(Roles = "Admin, Employee")]
-        public async Task<ActionResult<BaseResponse>> DeleteGroup(int id)
+        public async Task<ActionResult<BaseResponse>> DeleteSpecie(int id)
         {
             try
             {
                 await WriteRequestInfoToLog(id);
-                var result = await _handler.DeleteGroup(id);
+                var result = await _handler.DeleteSpecie(id);
                 await WriteResponseInfoToLog(result);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                await _LogHandler.WriteToLog($"Exception on DeleteGroup with message --> {ex.Message}", Models.Severity.Exception);
+                await _LogHandler.WriteToLog($"Exception on DeleteSpecie with message --> {ex.Message}", Models.Severity.Exception);
                 return StatusCode(500);
             }
         }

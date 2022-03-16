@@ -21,8 +21,8 @@ namespace PetMeUp.Models.Models
         public double? MaximumMaleWeight { get; set; }
         public double? MinimumFemaleHeight { get; set; }
         public double? MaximumFemaleHeight { get; set; }
-        public PetGroup Group { get; set; }
-
+        public PetGroup? Group { get; set; } 
+        public Pic? Pic { get; set; }
         public ICollection<Pet> Pets { get; set; }
     }
 }
