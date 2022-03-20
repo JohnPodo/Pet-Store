@@ -6,22 +6,22 @@ namespace PetMeUp.Services
     {
         private int executionCount = 0;
         private readonly ILogger<CleanerService> _logger;
-        private readonly LogHandler handler;
-        private readonly PicHandler _Pichandler;
-        private Timer _timer = null!;
+        private LogHandler handler;
+        private PicHandler _Pichandler;
+        private Timer _timer = null!; 
+        protected readonly string _conString;
+        protected readonly string _dbtype;
 
         public CleanerService(ILogger<CleanerService> logger,IConfiguration config)
         {
-            _logger = logger; 
-            handler = new LogHandler(config.GetConnectionString("ConString"), config.GetConnectionString("DbType"));
-            _Pichandler = new PicHandler(config.GetConnectionString("ConString"), config.GetConnectionString("DbType"),handler);
+            _logger = logger;
+            _conString = config.GetConnectionString("ConString");
+            _dbtype = config.GetConnectionString("DbType"); 
         }
 
         public void Dispose()
         {
-            _timer?.Dispose();
-            handler.Dispose();
-            _Pichandler.Dispose();
+            _timer?.Dispose(); 
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -35,6 +35,8 @@ namespace PetMeUp.Services
         }
         private void DoWork(object? state)
         {
+            handler = new LogHandler(_conString, _dbtype);
+            _Pichandler = new PicHandler(_conString, _dbtype, handler);
             var result = handler.DeleteAllLogs().Result;
             if (!result) handler.WriteToLog("Something went wrong while cleaning logs", Models.Severity.Error);
             var count = Interlocked.Increment(ref executionCount);
@@ -52,6 +54,10 @@ namespace PetMeUp.Services
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 
+            handler.Dispose();
+            _Pichandler.Dispose(); 
+            handler = null;
+            _Pichandler = null; 
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

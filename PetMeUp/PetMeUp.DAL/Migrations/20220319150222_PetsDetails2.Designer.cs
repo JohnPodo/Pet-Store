@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetMeUp.DAL;
 
@@ -11,9 +12,10 @@ using PetMeUp.DAL;
 namespace PetMeUp.DAL.Migrations
 {
     [DbContext(typeof(PetContext))]
-    partial class PetContextModelSnapshot : ModelSnapshot
+    [Migration("20220319150222_PetsDetails2")]
+    partial class PetsDetails2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,12 +207,7 @@ namespace PetMeUp.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PetId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("PetId");
 
                     b.ToTable("Pics");
                 });
@@ -289,18 +286,6 @@ namespace PetMeUp.DAL.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Pic");
-                });
-
-            modelBuilder.Entity("PetMeUp.Models.Models.Pic", b =>
-                {
-                    b.HasOne("PetMeUp.Models.Models.Pet", null)
-                        .WithMany("Pics")
-                        .HasForeignKey("PetId");
-                });
-
-            modelBuilder.Entity("PetMeUp.Models.Models.Pet", b =>
-                {
-                    b.Navigation("Pics");
                 });
 
             modelBuilder.Entity("PetMeUp.Models.Models.PetGroup", b =>
